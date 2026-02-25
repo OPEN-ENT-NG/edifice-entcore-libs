@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>org.entcore</groupId>
-    <artifactId>ent-core</artifactId>
+    <artifactId>ent-core-libs</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
 
@@ -29,35 +29,20 @@
     </repositories>
 
     <scm>
-        <connection>scm:git:https://github.com/opendigitaleducation/entcore.git</connection>
-        <developerConnection>scm:git:https://github.com/opendigitaleducation/entcore.git</developerConnection>
-        <url>https://github.com/opendigitaleducation/entcore</url>
+        <connection>scm:git:https://github.com/opendigitaleducation/edifice-entcore-libs.git</connection>
+        <developerConnection>scm:git:https://github.com/opendigitaleducation/edifice-entcore-libs.git</developerConnection>
+        <url>https://github.com/opendigitaleducation/edifice-entcore-libs</url>
     </scm>
 
     <modules>
-        <module>admin</module>
-        <module>app-registry</module>
-        <module>archive</module>
-        <module>audience</module>
-        <module>auth</module>
-        <module>cas</module>
         <module>common</module>
-        <module>communication</module>
-        <module>conversation/backend</module>
-        <module>directory</module>
-        <module>feeder</module>
-        <module>infra</module>
-        <module>portal/backend</module>
         <module>session</module>
         <module>test</module>
-        <module>timeline</module>
-        <module>workspace</module>
         <module>broker-parent</module>
-        <module>tests</module>
     </modules>
 
     <properties>
-        <revision>6.14.2</revision>
+        <revision>1.0.0</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.1.1</modPostgresVersion>
