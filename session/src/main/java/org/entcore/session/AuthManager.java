@@ -118,11 +118,10 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			return failedFuture(e);
 		}
 
-		if (AuthManager.class.getName().equals(this.getClass().getName())) {
-			sessionStore = new MapSessionStore(vertx, cluster, config);
-			final String address = getOptionalStringConfig("address", "wse.session");
-			eb.consumer(address, this);
-		}
+		sessionStore = SessionStoreFactory.createSessionStore(vertx, cluster, config);
+		final String address = getOptionalStringConfig("address", "wse.session");
+		eb.consumer(address, this);
+
 		return Future.succeededFuture();
 	}
 
