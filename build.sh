@@ -143,7 +143,7 @@ publish() {
 }
 
 image() {
-  ./edifice image --project-type=entcore $EDIFICE_CLI_DEBUG_OPTION
+  ./edifice image --project-type=entcore $EDIFICE_CLI_DEBUG_OPTION --rebuild=false
 }
 
 if [ ! -e .env ]; then
