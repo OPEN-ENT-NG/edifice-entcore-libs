@@ -142,9 +142,6 @@ publish() {
   ./edifice publish --clients=true --dry-run=false --service=TRUE  --project-type=entcore $EDIFICE_CLI_DEBUG_OPTION
 }
 
-image() {
-  ./edifice image --project-type=entcore $EDIFICE_CLI_DEBUG_OPTION --rebuild=false
-}
 
 if [ ! -e .env ]; then
   init
@@ -169,9 +166,6 @@ do
       ;;
     publish)
       publish
-      ;;
-    image)
-      image
       ;;
     *)
       echo "Invalid argument : $param"
