@@ -2,9 +2,6 @@ package org.entcore.session;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

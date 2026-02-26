@@ -1,6 +1,5 @@
-package com.opendigitaleducation.session;
+package org.entcore.session;
 
-import fr.wseduc.webutils.Utils;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.redis.client.Response;

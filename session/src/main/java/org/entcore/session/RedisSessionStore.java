@@ -4,13 +4,7 @@
  *
  */
 
-package com.opendigitaleducation.session;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.entcore.session.AbstractSessionStore;
+package org.entcore.session;
 
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.collections.SharedDataHelper;
@@ -25,9 +19,13 @@ import io.vertx.redis.client.RedisAPI;
 import io.vertx.redis.client.RedisOptions;
 import io.vertx.redis.client.Response;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import static java.util.Arrays.asList;
-import static com.opendigitaleducation.session.RedisResponseHelper.mapResponse;
-import static com.opendigitaleducation.session.RedisResponseHelper.listResponse;
+import static org.entcore.session.RedisResponseHelper.listResponse;
+import static org.entcore.session.RedisResponseHelper.mapResponse;
 
 public class RedisSessionStore extends AbstractSessionStore {
 

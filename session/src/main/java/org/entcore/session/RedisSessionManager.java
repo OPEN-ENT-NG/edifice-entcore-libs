@@ -4,9 +4,7 @@
  *
  */
 
-package com.opendigitaleducation.session;
-
-import org.entcore.session.AuthManager;
+package org.entcore.session;
 
 import io.vertx.core.Promise;
 

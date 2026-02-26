@@ -1,6 +1,4 @@
-package com.opendigitaleducation.session;
-
-import org.entcore.session.ActivityManager;
+package org.entcore.session;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

@@ -1,17 +1,17 @@
 package org.entcore.session;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.core.impl.VertxInternal;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 

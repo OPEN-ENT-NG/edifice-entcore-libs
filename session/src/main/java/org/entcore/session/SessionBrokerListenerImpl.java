@@ -7,6 +7,8 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.broker.api.dto.session.*;
 import org.entcore.broker.proxy.SessionBrokerListener;
@@ -16,16 +18,14 @@ import org.entcore.common.http.QueryParamTokenFilter;
 import org.entcore.common.http.UserAuthWithQueryParamFilter;
 import org.entcore.common.http.filter.AppOAuthResourceProvider;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.entcore.common.session.SessionRecreationRequest;
 
 /**
  * Implementation of the SessionBrokerListener interface.

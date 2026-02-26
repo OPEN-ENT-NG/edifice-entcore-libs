@@ -23,20 +23,11 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.SharedDataHelper;
-
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static io.vertx.core.Future.failedFuture;
-
 import fr.wseduc.webutils.request.CookieHelper;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.tuple.Pair;
@@ -48,13 +39,11 @@ import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.StringUtils;
 import org.vertx.java.busmods.BusModBase;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static io.vertx.core.Future.failedFuture;
 
 public class AuthManager extends BusModBase implements Handler<Message<JsonObject>> {
 
