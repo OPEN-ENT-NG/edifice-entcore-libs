@@ -1,6 +1,7 @@
 {
   "name": "org.entcore~session",
   "worker": true,
+  "waitDeploy": true,
   "config": {
     "slo": {{ sessionSlo | default('true') }},
     "slo-oidc-backchannel-logout": {{ openidSlo | default('false') }},
