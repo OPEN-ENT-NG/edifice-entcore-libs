@@ -32,5 +32,12 @@
             <scope>runtime</scope>
             <classifier>fat</classifier>
         </dependency>
+        <dependency>
+            <groupId>org.entcore</groupId>
+            <artifactId>broker</artifactId>
+            <version>${revision}</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
+        </dependency>
     </dependencies>
 </project>
