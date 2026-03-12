@@ -328,8 +328,10 @@ public abstract class BaseServer extends Server {
 			);
 			final String initScriptsPath = FileResolver.absolutePath(config.getString("init-scripts", "sql"));
 			DB migration = new DB(vertx, sqlAdmin, schema);
-			migration.loadScripts(initScriptsPath)
-				.compose(Void -> postSqlScripts());
+			if(!"false".equalsIgnoreCase(System.getenv("RUN_SQL_MIGRATION"))) {
+				migration.loadScripts(initScriptsPath)
+					.compose(Void -> postSqlScripts());
+			}
 		}
 		if (config.getBoolean("elasticsearch", false)) {
 			if (config.getJsonObject("elasticsearchConfig") != null) {

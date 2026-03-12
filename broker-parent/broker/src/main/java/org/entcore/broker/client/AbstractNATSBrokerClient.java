@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.*;
 
+import static io.vertx.core.Future.failedFuture;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -126,7 +127,11 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
     public Future<Void> start() {
         // 1. Connect all NATS clients
         List<Future<Void>> connectFutures = new ArrayList<>();
-        for (NatsClient client : getAllNatsClients()) {
+        final List<NatsClient> clients = getAllNatsClients();
+        if(clients == null || clients.isEmpty()) {
+            return failedFuture("No clients were defined in the configuration");
+        }
+        for (NatsClient client : clients) {
             Future<Void> connectFuture = client.connect()
                 .onSuccess(e -> {
                     if (client.getConnection() != null) {
@@ -342,13 +347,13 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
         final InputStream is = this.getClass().getClassLoader().getResourceAsStream(path);
         if (is == null) {
             log.warn("Cannot find " + path + " file in classpath");
-            return Future.failedFuture(new FileNotFoundException("Cannot find " + path + " file in classpath"));
+            return failedFuture(new FileNotFoundException("Cannot find " + path + " file in classpath"));
         } else {
             try {
                 final NATSContract contracts = this.mapper.readValue(is, NATSContract.class);
                 return Future.succeededFuture(contracts);
             } catch (IOException e) {
-                return Future.failedFuture(e);
+                return failedFuture(e);
             }
         }
     }
@@ -393,7 +398,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
                             }
                         } catch (Exception e) {
                             log.error("Error invoking method", e);
-                            return Future.failedFuture(e);
+                            return failedFuture(e);
                         }
                     }
                 }).onSuccess(v -> {
@@ -553,7 +558,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
             return sendRawMessage(subject, mapper.writeValueAsString(message));
         } catch (JsonProcessingException e) {
             log.error("An error occurred while serializing message to JSON : " + message, e);
-            return Future.failedFuture(e);
+            return failedFuture(e);
         }
     }
 
@@ -563,7 +568,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
     public <K> Future<Void> sendRawMessage(String subject, String message) {
         final NatsClient client = getNatsClientForSubject(subject);
         if (client == null) {
-            return Future.failedFuture("No NATS client available for subject: " + subject);
+            return failedFuture("No NATS client available for subject: " + subject);
         }
 
         try {
@@ -572,7 +577,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
                     .onFailure(e -> log.error("Error while sending message to NATS", e));
         } catch (Exception e) {
             log.error("An error occurred while serializing message to JSON : " + message, e);
-            return Future.failedFuture(e);
+            return failedFuture(e);
         }
     }
     
@@ -585,7 +590,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
     public <K, V> Future<V> request(String subject, K message, long timeout) {
         final NatsClient client = getNatsClientForSubject(subject);
         if (client == null) {
-            return Future.failedFuture("No NATS client available for subject: " + subject);
+            return failedFuture("No NATS client available for subject: " + subject);
         }
         try {
             final String payload = mapper.writeValueAsString(message);
@@ -596,12 +601,12 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
                             V response = mapper.readValue(responseStr, (Class<V>) Object.class);
                             return Future.succeededFuture(response);
                         } catch (Exception err) {
-                            return Future.failedFuture(err);
+                            return failedFuture(err);
                         }
                     });
         } catch (Exception e) {
             log.error("Error while serializing message to JSON", e);
-            return Future.failedFuture(e);
+            return failedFuture(e);
         }
     }
     /**
@@ -636,7 +641,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
     public <K, V> Future<Void> subscribe(String subject, BrokerListener<K, V> listener) {
         final NatsClient client = getNatsClientForSubject(subject);
         if (client == null) {
-            return Future.failedFuture("No NATS client available for subject: " + subject);
+            return failedFuture("No NATS client available for subject: " + subject);
         }
         
         if (subscriptions.contains(subject)) {
@@ -677,7 +682,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
     public Future<Void> unsubscribe(String subject) {
         final NatsClient client = getNatsClientForSubject(subject);
         if (client == null) {
-            return Future.failedFuture("No NATS client available for subject: " + subject);
+            return failedFuture("No NATS client available for subject: " + subject);
         }
         
         subscriptions.remove(subject);
