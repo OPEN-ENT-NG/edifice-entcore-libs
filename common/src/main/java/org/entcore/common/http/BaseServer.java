@@ -331,6 +331,9 @@ public abstract class BaseServer extends Server {
 			if(!"false".equalsIgnoreCase(System.getenv("RUN_SQL_MIGRATION"))) {
 				migration.loadScripts(initScriptsPath)
 					.compose(Void -> postSqlScripts());
+			} else {
+				log.info("Skip running sql migrations for " + this.schema);
+			}
 			}
 		}
 		if (config.getBoolean("elasticsearch", false)) {
