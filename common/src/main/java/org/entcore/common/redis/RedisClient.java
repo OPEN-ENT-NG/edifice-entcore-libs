@@ -2,23 +2,27 @@ package org.entcore.common.redis;
 
 import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.*;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.redis.client.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.Promise;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.utils.StringUtils;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.common.utils.StringUtils.isEmpty;
 
 public class RedisClient implements IRedisClient {
     public static final String ID_STREAM = "$id_stream";
     public static final String NAME_STREAM = "$name_stream";
     protected final RedisAPI client;
     protected final RedisOptions redisOptions;
-    protected Logger log = LoggerFactory.getLogger(RedisClient.class);
+    private static final Logger log = LoggerFactory.getLogger(RedisClient.class);
 
     public RedisClient(final io.vertx.redis.client.Redis redis, final RedisOptions redisOptions) {
         this.client = RedisAPI.api(redis);
@@ -55,24 +59,54 @@ public class RedisClient implements IRedisClient {
         }
     }
 
-    public RedisClient(final Vertx vertx, final JsonObject redisConfig) {
-        final String host = redisConfig.getString("host");
-        final Integer port = redisConfig.getInteger("port");
-        final String username = redisConfig.getString("username","");
-        final String password = redisConfig.getString("password");
-        final String auth = redisConfig.getString("auth");
-        final Integer select = redisConfig.getInteger("select", 0);
-        if (StringUtils.isEmpty(password)) {
-            if (StringUtils.isEmpty(auth)) {
-                final String url = String.format("redis://%s:%s/%s", host, port, select);
-                this.redisOptions = new RedisOptions().setConnectionString(url);
-            }else{
-                final String url = String.format("redis://%s:%s/%s?password=%s", host, port, select, auth);
-                this.redisOptions = new RedisOptions().setConnectionString(url);
+    public static RedisOptions getOptions(final JsonObject redisConfig) {
+        final boolean isSsl;
+        if(redisConfig.containsKey("net-client-options")) {
+            isSsl = redisConfig.getJsonObject("net-client-options").getBoolean("ssl");
+        } else {
+            isSsl = false;
+        }
+        final boolean isSentinel = "SENTINEL".equals(redisConfig.getString("type"));
+        final String protocol = isSsl ? "rediss" : "redis";
+        final String masterName = redisConfig.getString("masterName", "mymaster");
+        final String masterFragment = isSentinel ? "#" + masterName : "";
+        log.info("masterFragment is " + masterFragment);
+        final List<String> redisConnectionStrings = new ArrayList<>();
+        if (redisConfig.containsKey("hosts")) {
+            final String username = redisConfig.getString("username", "");
+            final String auth = redisConfig.getString("auth", ":");
+            final String authFragment;
+            if(isNotEmpty(username) || isNotEmpty(auth)) {
+                authFragment = username + ":" + auth + "@";
+            } else {
+                authFragment = "";
+            }
+            final JsonArray hosts = redisConfig.getJsonArray("hosts");
+            for (int i = 0; i < hosts.size(); i++) {
+                final String host = hosts.getString(i);
+                final String connecString = protocol + "://"+ authFragment + host + ":" + redisConfig.getInteger("port") + masterFragment;
+                redisConnectionStrings.add(connecString);
             }
         } else {
-            final String url = String.format("redis://%s:%s@%s:%s/%s", username, password, host, port, select);
-            this.redisOptions = new RedisOptions().setConnectionString(url);
+            final String host = redisConfig.getString("host");
+            final Integer port = redisConfig.getInteger("port");
+            final String username = redisConfig.getString("username", "");
+            final String password = redisConfig.getString("password");
+            final String auth = redisConfig.getString("auth");
+            final Integer select = redisConfig.getInteger("select", 0);
+            if (isEmpty(password)) {
+                if (isEmpty(auth)) {
+                    redisConnectionStrings.add(String.format("%s://%s:%s/%s%s", protocol, host, port, select, masterFragment));
+                } else {
+                    redisConnectionStrings.add(String.format("%s://:%s@%s:%s/%s%s", protocol, auth, host, port, select, masterFragment));
+                }
+            } else {
+                redisConnectionStrings.add(String.format("%s://%s:%s@%s:%s/%s%s", protocol, username, password, host, port, select, masterFragment));
+            }
+        }
+        final RedisOptions redisOptions = new RedisOptions().setEndpoints(redisConnectionStrings);
+        if(isSentinel) {
+            redisOptions.setMasterName(masterName);
         }
         if(redisConfig.getInteger("maxWaitingHandlers") !=null){
             redisOptions.setMaxWaitingHandlers(redisConfig.getInteger("maxWaitingHandlers"));
@@ -83,7 +117,27 @@ public class RedisClient implements IRedisClient {
         if(redisConfig.getInteger("maxPoolWaiting") !=null){
             redisOptions.setMaxPoolWaiting(redisConfig.getInteger("maxPoolWaiting"));
         }
-        final io.vertx.redis.client.Redis oldClient = io.vertx.redis.client.Redis.createClient(vertx, redisOptions);
+        if(redisConfig.getInteger("topology-cache-ttl") != null) {
+            redisOptions.setTopologyCacheTTL(redisConfig.getInteger("topology-cache-ttl"));
+        }if(redisConfig.getInteger("hash-slot-cache-ttl") != null) {
+            redisOptions.setHashSlotCacheTTL(redisConfig.getInteger("hash-slot-cache-ttl"));
+        }
+        if(isNotEmpty(redisConfig.getString("type"))) {
+            redisOptions.setType(RedisClientType.valueOf(redisConfig.getString("type")));
+        }
+        if(redisConfig.getBoolean("auto-failover") != null) {
+            redisOptions.setAutoFailover(redisConfig.getBoolean("auto-failover"));
+        }
+
+        if(redisConfig.containsKey("net-client-options")) {
+            redisOptions.setNetClientOptions(new NetClientOptions(redisConfig.getJsonObject("net-client-options")));
+        }
+        return redisOptions;
+    }
+
+    public RedisClient(final Vertx vertx, final JsonObject redisConfig) {
+        this.redisOptions = getOptions(redisConfig);
+        final io.vertx.redis.client.Redis oldClient = io.vertx.redis.client.Redis.createClient(vertx, getOptions(redisConfig));
         client = RedisAPI.api(oldClient);
     }
 

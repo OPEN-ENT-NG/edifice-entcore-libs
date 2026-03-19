@@ -12,6 +12,10 @@
 
     <artifactId>common</artifactId>
 
+    <properties>
+        <vertxRedisVersion>4.5.22</vertxRedisVersion>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>fr.wseduc</groupId>
@@ -22,7 +26,7 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-redis-client</artifactId>
-            <version>${vertxVersion}</version>
+            <version>${vertxRedisVersion}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

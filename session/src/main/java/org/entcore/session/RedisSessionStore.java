@@ -1,10 +1,6 @@
-/* Copyright © "Open Digital Education", 2019
- *
- * This program is published by "Open Digital Education".
- *
- */
-
 package org.entcore.session;
+
+import io.vertx.redis.client.*;
 
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.collections.SharedDataHelper;
@@ -14,10 +10,13 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.redis.client.Redis;
 import io.vertx.redis.client.RedisAPI;
 import io.vertx.redis.client.RedisOptions;
 import io.vertx.redis.client.Response;
+import org.entcore.common.redis.RedisClient;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,6 +47,8 @@ public class RedisSessionStore extends AbstractSessionStore {
     private Map<String, Long> expire = new HashMap<>();
     private Map<String, JsonObject> sessions = new HashMap<>();
 
+    private static final Logger log = LoggerFactory.getLogger(RedisSessionStore.class);
+
     public RedisSessionStore(Vertx vertx, Boolean cluster, JsonObject config) {
         super(vertx, config, cluster);
         final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
@@ -65,18 +66,11 @@ public class RedisSessionStore extends AbstractSessionStore {
                 redisConfig = new JsonObject(redisConf);
             }
         }
-        String redisConnectionString = redisConfig.getString("connection-string");
-        if (Utils.isEmpty(redisConnectionString)) {
-            redisConnectionString =
-                    "redis://" + (redisConfig.containsKey("auth") ? ":" + redisConfig.getString("auth") + "@" : "") +
-                    redisConfig.getString("host") + ":" + redisConfig.getInteger("port") + "/" +
-                    redisConfig.getInteger("select", 0);
+        if(redisConfig == null) {
+            throw new IllegalStateException("redisConfig is nowhere to be found");
         }
-        final RedisOptions redisOptions = new RedisOptions()
-                .setConnectionString(redisConnectionString)
-                .setMaxPoolSize(redisConfig.getInteger("pool-size", 32))
-                .setMaxWaitingHandlers(redisConfig.getInteger("maxWaitingHandlers", 100))
-                .setMaxPoolWaiting(redisConfig.getInteger("maxPoolWaiting", 100));
+
+        final RedisOptions redisOptions = RedisClient.getOptions(redisConfig);
         final Redis redisClient = Redis.createClient(vertx, redisOptions);
 
         redisAPI = RedisAPI.api(redisClient);

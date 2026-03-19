@@ -334,7 +334,6 @@ public abstract class BaseServer extends Server {
 			} else {
 				log.info("Skip running sql migrations for " + this.schema);
 			}
-			}
 		}
 		if (config.getBoolean("elasticsearch", false)) {
 			if (config.getJsonObject("elasticsearchConfig") != null) {

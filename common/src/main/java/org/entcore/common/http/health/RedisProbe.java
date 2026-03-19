@@ -7,6 +7,8 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.redis.client.RedisAPI;
 import org.entcore.common.redis.Redis;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
@@ -17,6 +19,7 @@ import static java.util.Arrays.asList;
  * Check that Redis is reachable and that a simple read query can be performed.
  */
 public class RedisProbe implements HealthCheckProbe {
+  private static final Logger log = LoggerFactory.getLogger(RedisProbe.class);
   private Vertx vertx;
 
   @Override
@@ -41,6 +44,9 @@ public class RedisProbe implements HealthCheckProbe {
     final String key = "probe-ent-" + UUID.randomUUID();
     return client.set(asList(key, "healthcheck", "EX", "1"))
       .map(e -> new HealthCheckProbeResult(getName(), true, null))
-      .otherwise(th -> new HealthCheckProbeResult(getName(), false, new JsonObject().put("error", th.getMessage())));
+      .otherwise(th -> {
+        log.error("Error while connecting to Redis", th);
+        return new HealthCheckProbeResult(getName(), false, new JsonObject().put("error", th.getMessage()));
+      });
   }
 }
