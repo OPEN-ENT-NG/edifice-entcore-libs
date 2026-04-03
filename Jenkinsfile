@@ -38,6 +38,11 @@ pipeline {
         sh "DRY_RUN=false ./build.sh \$BUILD_SH_EXTRA_PARAM publish"
       }
     }
+    stage('Image') {
+      steps {
+        sh "./edifice image --rebuild=false probes"
+      }
+    }
 
   }
   post {
