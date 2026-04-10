@@ -168,6 +168,11 @@ public class PostgresqlEventStore extends GenericEventStore {
 		store(event, handler);
 	}
 
+	@Override
+	protected void storeMalformedEvent(JsonObject event, Handler<Either<String, Void>> handler) {
+		logger.warn("Unimplemented protected void PostgresqlEventStore.storeMalformedEvent(JsonObject event, Handler<Either<String, Void>> handler)");
+	}
+
 	public void store(final JsonObject event, final Handler<Either<String, Void>> handler) {
 		if (knownEvents == null) {
 			logger.error("Knows events is null : " + event.encode());
@@ -200,6 +205,13 @@ public class PostgresqlEventStore extends GenericEventStore {
 			event.remove("groups");
 			event.remove("referer");
 			event.remove("sessionId");
+			event.remove("osName");
+			event.remove("osVersion");
+			event.remove("deviceType");
+			event.remove("deviceName");
+			event.remove("appName");
+			event.remove("appVersion");
+			event.remove("platformName");
 			e = event;
 			tableName = "events." + eventType.toLowerCase() + "_events";
 		} else if (allowedEvents.isEmpty()) {
