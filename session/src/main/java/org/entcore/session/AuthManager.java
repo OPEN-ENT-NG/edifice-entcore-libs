@@ -65,7 +65,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		super.start();
 		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
 		sharedDataHelper.init(vertx);
-		sharedDataHelper.<String, String>getLocalMulti("server", "signKey", "sameSiteValue")
+		sharedDataHelper.<String, String>getLocalMulti("server", "signKey", "sameSiteValue", "node")
 			.compose(serverConfig -> {
 				CookieHelper.getInstance().init(
 						serverConfig.get("signKey"), serverConfig.get("sameSiteValue"), log);
@@ -82,9 +82,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		neo4j.init(vertx, neo4jConfig);
 
 		cluster = vertx.isClustered();
-		String node = (String) sessionMap.get("node");
-		mongo = MongoDb.getInstance();
-		mongo.init(vertx.eventBus(), node + config.getString("mongo-address", "wse.mongodb.persistor"));
+		mongo.init(vertx.eventBus(), config.getString("mongo-address", "wse.mongodb.persistor"));
 
 		this.xsrfOnAuth = config.getBoolean("xsrfOnAuth", true);
 
