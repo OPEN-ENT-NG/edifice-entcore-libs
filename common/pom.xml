@@ -96,13 +96,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.opendigitaleducation</groupId>
-            <artifactId>mod-json-schema-validator</artifactId>
-            <version>2.0-zookeeper-SNAPSHOT</version>
-            <scope>runtime</scope>
-            <classifier>fat</classifier>
-        </dependency>
-        <dependency>
             <groupId>fr.wseduc</groupId>
             <artifactId>mod-zip</artifactId>
             <version>${zipVersion}</version>
