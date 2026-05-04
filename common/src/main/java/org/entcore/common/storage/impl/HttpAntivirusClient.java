@@ -88,7 +88,11 @@ public class HttpAntivirusClient implements AntivirusClient {
           } else {
             handler.handle(new DefaultAsyncResult<>((Void) null));
           }
-        });
+        })
+		.onFailure(th -> {
+			log.error("Error while calling antivirus", th);
+			handler.handle(new DefaultAsyncResult<>(th));
+		});
   }
 
 	@Override
