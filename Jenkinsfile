@@ -4,7 +4,7 @@ pipeline {
   agent any
 
   environment {
-    NPM_TOKEN = credentials('npm-token')
+    NPM_TOKEN = credentials('NPM_PUBLIC_TOKEN')
     TIPTAP_PRO_TOKEN = credentials('tiptap-pro-token')
     NPM_PUBLIC_TOKEN = credentials('npm-public-token')
     X_DOCKER_NPM_TOKEN = credentials('x-docker-npm-token')
