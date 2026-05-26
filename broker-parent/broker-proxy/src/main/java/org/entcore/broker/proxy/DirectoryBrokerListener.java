@@ -70,4 +70,12 @@ public interface DirectoryBrokerListener {
    */
   @BrokerListener(subject = "directory.users.get.byids", proxy = true)
   Future<GetUsersByIdsResponseDTO> getUsersByIds(GetUsersByIdsRequestDTO request);
+
+  /**
+   * This method retrieves all users in provided groups with basic profile information
+   * @param request The request object containing the list of group IDs to get users from
+   * @return A response object containing a list of users
+   */
+  @BrokerListener(subject = "directory.users.get.bygroupids", proxy = true)
+  Future<GetUsersFromGroupsResponseDTO> getUsersFromGroups(GetUsersFromGroupsRequestDTO request);
 }
