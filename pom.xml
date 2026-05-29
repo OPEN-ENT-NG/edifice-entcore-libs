@@ -43,7 +43,7 @@
     </modules>
 
     <properties>
-        <revision>1.0.0</revision>
+        <revision>6.15.0</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.2.0</modPostgresVersion>
