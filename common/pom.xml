@@ -14,7 +14,6 @@
 
     <properties>
         <vertxRedisVersion>4.5.22</vertxRedisVersion>
-        <zipVersion>3.2-SNAPSHOT</zipVersion>
     </properties>
 
     <dependencies>
