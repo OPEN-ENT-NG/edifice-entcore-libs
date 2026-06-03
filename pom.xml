@@ -43,7 +43,7 @@
     </modules>
 
     <properties>
-        <revision>6.15-develop-pedago-SNAPSHOT</revision>
+        <revision>6.15-SNAPSHOT</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.2-SNAPSHOT</modPostgresVersion>
@@ -51,7 +51,7 @@
         <modJsonSchemaValidatorVersion>2.2-SNAPSHOT</modJsonSchemaValidatorVersion>
         <webUtilsVersion>3.4-SNAPSHOT</webUtilsVersion>
         <mongodbHelperVersion>3.1-SNAPSHOT</mongodbHelperVersion>
-        <zipVersion>3.2-SNAPSHOT</zipVersion>
+        <zipVersion>3.3-SNAPSHOT</zipVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
