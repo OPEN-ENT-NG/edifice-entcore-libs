@@ -31,6 +31,7 @@ public class UserProfileDTOClassAdmin {
     private final List<HobbyDTOClassAdmin> hobbies;
     private final List<SchoolDTOClassAdmin> schools; // List of schools the user is associated with, each containing a list of classes the user is enrolled in or teaches
     private final Boolean lockedEmail;
+    private final Boolean hasTotp;
 
     @JsonCreator
     public UserProfileDTOClassAdmin(
@@ -50,7 +51,8 @@ public class UserProfileDTOClassAdmin {
             @JsonProperty("mood") String mood,
             @JsonProperty("hobbies") List<HobbyDTOClassAdmin> hobbies,
             @JsonProperty("schools") List<SchoolDTOClassAdmin> schools,
-            @JsonProperty("lockedEmail") Boolean lockedEmail) {
+            @JsonProperty("lockedEmail") Boolean lockedEmail,
+            @JsonProperty("hasTotp") Boolean hasTotp) {
         this.profiles = profiles;
         this.id = id;
         this.firstName = firstName;
@@ -68,6 +70,7 @@ public class UserProfileDTOClassAdmin {
         this.hobbies = hobbies;
         this.schools = schools;
         this.lockedEmail = lockedEmail;
+        this.hasTotp = hasTotp;
     }
 
     public List<String> getProfiles() {
@@ -136,5 +139,9 @@ public class UserProfileDTOClassAdmin {
 
     public Boolean getLockedEmail() {
         return lockedEmail;
+    }
+
+    public Boolean getHasTotp() {
+        return hasTotp;
     }
 }
