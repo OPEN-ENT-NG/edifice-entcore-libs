@@ -30,8 +30,6 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.StringUtils;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -514,7 +512,7 @@ public class DefaultUserValidationService implements UserValidationService {
                 .put("userId", userInfos.getUserId())
                 .put("firstName", userInfos.getFirstName())
                 .put("lastName", userInfos.getLastName())
-                .put("date", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000)
+                .put("date", System.currentTimeMillis())
                 .put("oldPhoneNumber", userInfos.getMobile())
                 .put("newPhoneNumber", DataStateUtils.getValid(mobileState));
 
@@ -621,7 +619,7 @@ public class DefaultUserValidationService implements UserValidationService {
                 .put("host", Renders.getHost(request))
                 .put("firstName", userInfos.getFirstName())
                 .put("lastName", userInfos.getLastName())
-                .put("date", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000)
+                .put("date", System.currentTimeMillis())
                 .put("newEmail", DataStateUtils.getValid(emailState));
 
         Map<String, String> targets = new HashMap<>();
