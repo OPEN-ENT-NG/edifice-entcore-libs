@@ -78,7 +78,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	}
 
 	public Future<Void> initSession(Map<String, Object> sessionMap) {
-        BrokerProxyUtils.addBrokerProxy(new SessionBrokerListenerImpl(this), vertx);
+		if(config.getBoolean("broker-session-listener", true)) {
+			BrokerProxyUtils.addBrokerProxy(new SessionBrokerListenerImpl(this), vertx);
+		}
         final JsonObject neo4jConfig = (JsonObject) sessionMap.get("neo4jConfig");
 		neo4j = Neo4j.getInstance();
 		neo4j.init(vertx, neo4jConfig);
