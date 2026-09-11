@@ -411,10 +411,11 @@ public class DefaultUserValidationService implements UserValidationService {
     /**
      * Check if a user needs validating his mobile phone number.
      * 
-     * As of 2023-01-23, a user is required to validate his mobile phone number, if and only if :
+     * As of 2026-09-11, a user is required to validate his mobile phone number, if and only if :
      * - user is ADMx,
      * - MFA is set to "sms",
      * - user's structures do not ignore MFA,
+     * - user does not already have a TOTP key enrolled (SMS is only a fallback MFA method for those who do),
      * - data validation is not deactivated at startup,
      * - mobile phone number is not already validated.
      * 
@@ -424,6 +425,7 @@ public class DefaultUserValidationService implements UserValidationService {
         if( (userInfos.isADML() || userInfos.isADMC())
          && !Boolean.TRUE.equals(userInfos.getIgnoreMFA())
          && Mfa.withSms()
+         && !Boolean.TRUE.equals(userInfos.getHasTotp())
          && !UserValidationFactory.getFactory().deactivateValidationAfterLogin
          ){
             final Promise<JsonObject> promise = Promise.promise();
