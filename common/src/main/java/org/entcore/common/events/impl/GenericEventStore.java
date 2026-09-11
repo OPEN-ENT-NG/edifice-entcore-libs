@@ -42,6 +42,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static io.vertx.core.Future.succeededFuture;
+import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -68,6 +69,52 @@ public abstract class GenericEventStore implements EventStore {
 
 	private boolean accessDedupEnabled = true;
 
+	public static JsonObject generateEventAttributesFromRequest(HttpServerRequest request) {
+		final JsonObject event = new JsonObject();
+		if (request != null) {
+			final String ua = request.headers().get("User-Agent");
+			if (ua != null) {
+				event.put("ua", ua);
+			}
+
+			// Read device info from cookies set by front-end
+			final String osNameRaw = CookieHelper.get("osName", request);
+			final String osVersionRaw = CookieHelper.get("osVersion", request);
+			final String deviceTypeRaw = CookieHelper.get("deviceType", request);
+			final String deviceNameRaw = CookieHelper.get("deviceName", request);
+
+			final String osName = decodeCookie(osNameRaw);
+			final String osVersion = decodeCookie(osVersionRaw);
+			final String deviceType = decodeCookie(deviceTypeRaw);
+			final String deviceName = decodeCookie(deviceNameRaw);
+
+			event.put("osName", osName);
+			event.put("osVersion", osVersion);
+			event.put("deviceType", deviceType);
+			event.put("deviceName", deviceName);
+
+			final String ip = Renders.getIp(request);
+			if (ip != null) {
+				event.put("ip", ip);
+			}
+			final String sessionId = getSessionId(request);
+			if (sessionId != null) {
+				event.put("sessionId", sessionId);
+			}
+		}
+		return event;
+	}
+
+	@Override
+	public void createConnectorEvent(UserInfos user, JsonObject customAttributes, JsonObject requestAttributes) {
+		execute(user, TRACE_TYPE_CONNECTOR, null, customAttributes, requestAttributes);
+	}
+
+	@Override
+	public void createConnectorEvent(UserInfos user, JsonObject customAttributes, final HttpServerRequest request) {
+		execute(user, TRACE_TYPE_CONNECTOR, request, customAttributes, null);
+	}
+
 	@Override
 	public void createAndStoreEvent(String eventType, UserInfos user) {
 		createAndStoreEvent(eventType, user, null);
@@ -79,14 +126,14 @@ public abstract class GenericEventStore implements EventStore {
 		UserUtils.getUserInfos(eventBus, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {
-				execute(user, eventType, request, customAttributes);
+				execute(user, eventType, request, customAttributes, null);
 			}
 		});
 	}
 
 	@Override
 	public void createAndStoreEvent(String eventType, UserInfos user, JsonObject customAttributes) {
-		execute(user, eventType, null, customAttributes);
+		execute(user, eventType, null, customAttributes, null);
 	}
 
 	@Override
@@ -167,7 +214,7 @@ public abstract class GenericEventStore implements EventStore {
 						.put("share_profiles", new JsonArray(shareProfiles.stream().collect(Collectors.toList())))
 						.put("share_rights", new JsonArray(shareRights.stream().collect(Collectors.toList())));
 				user.setType(shareMapping.get(userId));
-				execute(user, "SHARE", null, customAttributes);
+				execute(user, "SHARE", null, customAttributes, null);
 			} else {
 				logger.error("Error when store share event on module: " + module + ", resourceId: " + resourceId);
 			}
@@ -240,7 +287,7 @@ public abstract class GenericEventStore implements EventStore {
 							customAttributes.put("useradmin", userAdmin);
 						}
 					}
-					execute(UserUtils.sessionToUserInfos(res.getJsonObject(0)), eventType, request, customAttributes);
+					execute(UserUtils.sessionToUserInfos(res.getJsonObject(0)), eventType, request, customAttributes, null);
 				} else {
 					if ("login".equals(attr)) {
 						createAndStoreEvent(eventType, "loginAlias", value, clientId, request);
@@ -253,12 +300,12 @@ public abstract class GenericEventStore implements EventStore {
 		});
 	}
 
-	private void execute(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
+	private void execute(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes, JsonObject requestAttributes) {
 		if (accessDedupEnabled && EventHelper.ACCESS_EVENT.equals(eventType) && request != null) {
-			checkAndStoreAccessEvent(user, eventType, request, customAttributes);
+			checkAndStoreAccessEvent(user, eventType, request, customAttributes, requestAttributes);
 			return;
 		}
-		doStore(user, eventType, request, customAttributes);
+		doStore(user, eventType, request, customAttributes, requestAttributes);
 	}
 
 	/**
@@ -282,17 +329,17 @@ public abstract class GenericEventStore implements EventStore {
 		return false;
 	}
 
-	private void checkAndStoreAccessEvent(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
+	private void checkAndStoreAccessEvent(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes, JsonObject requestAttributes) {
 		if (request != null && module != null && isDuplicateAccessModule(eventBus, user, module, eventType)) {
 			logger.warn("Skipping duplicate ACCESS event - same module as last access. module=" + module + ", url=" + request.uri());
 			return;
 		}
-		doStore(user, eventType, request, customAttributes);
+		doStore(user, eventType, request, customAttributes, requestAttributes);
 	}
 
-	private void doStore(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
+	private void doStore(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes, JsonObject requestAttributes) {
 		if (user == null || !userBlacklist.contains(user.getUserId())) {
-			final JsonObject event = generateEvent(eventType, user, request, customAttributes);
+			final JsonObject event = generateEvent(eventType, user, request, customAttributes, requestAttributes);
 			validateEvent(event, this.vertx)
 			.recover(th -> succeededFuture(false))
 			.onSuccess(isValid -> {
@@ -317,7 +364,7 @@ public abstract class GenericEventStore implements EventStore {
 
 
 	private JsonObject generateEvent(String eventType, UserInfos user, HttpServerRequest request,
-			JsonObject customAttributes) {
+			JsonObject customAttributes, JsonObject requestAttributes) {
 		JsonObject event = new JsonObject();
 		if (customAttributes != null && customAttributes.size() > 0) {
 			event.mergeIn(customAttributes);
@@ -339,37 +386,18 @@ public abstract class GenericEventStore implements EventStore {
 				event.put("groups", new JsonArray(user.getGroupsIds()));
 			}
 		}
+
 		if (request != null) {
-			final String ua = request.headers().get("User-Agent");
-			if (ua != null) {
-				event.put("ua", ua);
+			final JsonObject eventAttr = generateEventAttributesFromRequest(request);
+			if (!eventAttr.isEmpty()) {
+				event.mergeIn(eventAttr);
 			}
-			
-			// Read device info from cookies set by front-end
-			final String osNameRaw = CookieHelper.get("osName", request);
-			final String osVersionRaw = CookieHelper.get("osVersion", request);
-			final String deviceTypeRaw = CookieHelper.get("deviceType", request);
-			final String deviceNameRaw = CookieHelper.get("deviceName", request);
-			
-			final String osName = decodeCookie(osNameRaw);
-			final String osVersion = decodeCookie(osVersionRaw);
-			final String deviceType = decodeCookie(deviceTypeRaw);
-			final String deviceName = decodeCookie(deviceNameRaw);
-			
-			event.put("osName", osName);
-			event.put("osVersion", osVersion);
-			event.put("deviceType", deviceType);
-			event.put("deviceName", deviceName);
-			
-			final String ip = Renders.getIp(request);
-			if (ip != null) {
-				event.put("ip", ip);
-			}
-			final String sessionId = getSessionId(request);
-			if (sessionId != null) {
-				event.put("sessionId", sessionId);
+		} else if (requestAttributes != null) {
+			if (!requestAttributes.isEmpty()) {
+				event.mergeIn(requestAttributes);
 			}
 		}
+
 		return event;
 	}
 
@@ -395,7 +423,7 @@ public abstract class GenericEventStore implements EventStore {
 		}
 	}
 	
-	private String decodeCookie(String value) {
+	private static String decodeCookie(String value) {
 		if (value == null) {
 			return "Unknown";
 		}
