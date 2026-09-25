@@ -35,3 +35,5 @@ suppression).
 Module chapeau contenant :
 - des librairies permettant aux autres modules de définir des _listeners_ typés sur un broker (NATS par défaut)
 - un verticle écoutant et répondant sur le broker (NATS par défaut)
+
+Ce dépôt est un miroir officiel du dépôt Edifice : https://github.com/edificeio/edifice-entcore-libs
